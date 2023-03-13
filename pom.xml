@@ -66,6 +66,11 @@
             <artifactId>jsoup</artifactId>
             <version>1.15.3</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.darrachequesne</groupId>-->
+<!--            <artifactId>spring-data-jpa-datatables</artifactId>-->
+<!--            <version>5.2.0</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -73,14 +78,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

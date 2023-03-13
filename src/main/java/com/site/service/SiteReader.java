@@ -5,7 +5,6 @@ import com.site.constant.Constant;
 import com.site.domain.CountryCallingCode;
 import com.site.domain.CountryDetail;
 import com.site.domain.WebsiteContactDetail;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +20,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,23 +33,25 @@ import static com.site.constant.Constant.EMAIL_REGEX;
 public class SiteReader {
     public static final String MAIN_URL = "main_url";
     public static final String SUB_URL = "sub_url";
-    private static final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
+    private final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
     public static final Pattern emailPattern = Pattern.compile(EMAIL_REGEX);
 
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        List<String> sites = List.of("https://www.tatvasoft.com");
-
-        for (String s : sites) {
-            new Thread(() -> {
-                new Generator().getPhoneNumberANDEmailFromWebPage(s);
-            }).start();
+    public List<WebsiteContactDetail> getSiteData(List<String> sites) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        try {
+            for (String s : sites) {
+                executor.execute(new Generator(s));
+            }
+        } finally {
+            executor.shutdown();
+            executor.awaitTermination(10, TimeUnit.SECONDS);
         }
+        return contactDetailList;
     }
 
 
-    public static class Generator {
+    public class Generator implements Runnable {
         private String siteURL;
         private String countryCodeRegex;
         private final Logger log = SiteReader.log;
@@ -55,10 +59,19 @@ public class SiteReader {
         private final HashSet<String> emailSet = new HashSet<>();
         private final HashSet<String> phoneNumberSet = new HashSet<>();
 
-        private void getPhoneNumberANDEmailFromWebPage(String site) {
+        public Generator(String s) {
+            this.siteURL = s;
+        }
+
+        @Override
+        public void run() {
+            getPhoneNumberANDEmailFromWebPage();
+        }
+
+        private void getPhoneNumberANDEmailFromWebPage() {
             Document doc;
             hrefSet.clear();
-            correctURL(site);
+            correctURL(siteURL);
 
             doc = getURLResponse(siteURL, SiteReader.MAIN_URL);
             if (doc == null) {
@@ -107,6 +120,10 @@ public class SiteReader {
                         });
             }
             WebsiteContactDetail contactDetail = new WebsiteContactDetail(siteURL, emailSet, phoneNumberSet);
+
+            synchronized (contactDetailList) {
+                contactDetailList.add(contactDetail);
+            }
             log.debug("ContactDetail: {}", contactDetail);
         }
 
@@ -157,7 +174,6 @@ public class SiteReader {
             return siteURL;
         }
 
-        @SuppressWarnings("ConstantValue")
         private Document getURLResponse(String url, String type) {
             log.debug("Inside getURLResponse url: {} type: {}", url, type);
 
@@ -177,6 +193,9 @@ public class SiteReader {
                         document = res.parse();
                         log.debug("Document is Ready for URL: {}", url);
                         break;
+                    } else if (HttpStatus.resolve(res.statusCode()).is4xxClientError()) {
+                        log.debug("4xx Status Code for URL: {};", url);
+                        break;
                     }
 
                 } catch (Exception exception) {
@@ -192,7 +211,7 @@ public class SiteReader {
             if (href.startsWith("/")) {
                 href = siteURL + href;
             }
-            return Pattern.matches(Constant.httpURLRegex, href) && hrefSet.add(href);
+            return Pattern.matches(Constant.URL_REGEX, href) && hrefSet.add(href);
         }
 
         public String decodeEmail(String encodedEmail) {
