@@ -14,15 +14,19 @@ $(function () {
       dataType: "json",
       success: function (response) {
         $("#siteListTable").removeAttr("hidden");
-        console.log("Inside",response);
-
-        if ($.fn.DataTable.isDataTable("#siteListTable")) {
-          $("#siteListTable").DataTable().destroy();
-        }
-
-        $("#siteListTable tbody").empty();
         $("#siteListTable").dataTable({
           paging: false,
+          stateSave: true,
+          destroy: true,
+          dom: "Bfrtip",
+          buttons: [
+            "copy",
+            {
+              extend: "spacer",
+              style: "bar",
+            },
+            "excel"
+          ],
           columns: [
             {
               data: "siteName",

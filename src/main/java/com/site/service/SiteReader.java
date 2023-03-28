@@ -33,19 +33,19 @@ import static com.site.constant.Constant.EMAIL_REGEX;
 public class SiteReader {
     public static final String MAIN_URL = "main_url";
     public static final String SUB_URL = "sub_url";
-    private final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
     public static final Pattern emailPattern = Pattern.compile(EMAIL_REGEX);
+    private final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
 
 
     public List<WebsiteContactDetail> getSiteData(List<String> sites) throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        ExecutorService executor = Executors.newFixedThreadPool(20);
         try {
             for (String s : sites) {
                 executor.execute(new Generator(s));
             }
         } finally {
             executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.SECONDS);
+            executor.awaitTermination(25, TimeUnit.SECONDS);
         }
         return contactDetailList;
     }
@@ -162,7 +162,7 @@ public class SiteReader {
             log.debug("[{}] countryCodeRegex: {}", siteURL, countryCodeRegex);
         }
 
-        private String correctURL(String siteURL) {
+        private void correctURL(String siteURL) {
             if (!siteURL.startsWith("www.") && !siteURL.startsWith("http://") && !siteURL.startsWith("https://")) {
                 siteURL = "www." + siteURL;
             }
@@ -171,7 +171,6 @@ public class SiteReader {
             }
             siteURL = URIUtils.extractHost(URI.create(siteURL)).toString();
             this.siteURL = siteURL;
-            return siteURL;
         }
 
         private Document getURLResponse(String url, String type) {
@@ -181,11 +180,15 @@ public class SiteReader {
             if (type.equals(SiteReader.MAIN_URL)) {
                 url = siteURL;
             } else {
-                url = url.startsWith("/") ? siteURL + url : url;
+                if (url.startsWith("/")) {
+                    url = siteURL + url;
+                } else if (!url.startsWith("http")) {
+                    url = siteURL + "/" + url;
+                }
             }
 
-            int i = 0;
-            while (i < 5) {
+            int i = 1;
+            while (i <= 3) {
                 try {
                     Connection.Response res = Jsoup.connect(url).userAgent("Mozilla/5.0").execute();
 
@@ -193,14 +196,15 @@ public class SiteReader {
                         document = res.parse();
                         log.debug("Document is Ready for URL: {}", url);
                         break;
-                    } else if (HttpStatus.resolve(res.statusCode()).is4xxClientError()) {
-                        log.debug("4xx Status Code for URL: {};", url);
+                    } else if (HttpStatus.resolve(res.statusCode()).is4xxClientError()
+                            || HttpStatus.resolve(res.statusCode()).is5xxServerError()) {
+                        log.debug("Status Code: {} for URL: {};", res.statusCode(), url);
                         break;
                     }
 
                 } catch (Exception exception) {
                     log.error("Exception while get document for site: {}. Error message: {}", url, exception.getMessage(), exception);
-                    log.debug("Lets try {} time", ++i);
+                    log.debug("Lets try {} time for {}", ++i, url);
                 }
             }
             return document;
@@ -210,6 +214,8 @@ public class SiteReader {
             String href = element.attr("href");
             if (href.startsWith("/")) {
                 href = siteURL + href;
+            } else if (!href.startsWith("http")) {
+                href = siteURL + "/" + href;
             }
             return Pattern.matches(Constant.URL_REGEX, href) && hrefSet.add(href);
         }

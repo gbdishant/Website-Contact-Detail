@@ -169,7 +169,6 @@ public class Common {
             });
 
             countryDialCodeMap = countryCallingCodes.stream()
-                    .parallel()
                     .collect(Collectors.toMap(CountryCallingCode::getCode, Function.identity()));
         } catch (Exception exception) {
             log.error("Exception while parse CountryCallingCode.json. Error message: {}", exception.getMessage(), exception);
