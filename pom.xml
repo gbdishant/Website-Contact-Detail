@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.site</groupId>
     <artifactId>website-contact-detail</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>WebsiteContactDetail</name>
     <description>Get Email and Phone Number from Website</description>
     <properties>
