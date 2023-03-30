@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,31 +59,8 @@ public class NavigationController {
     @RequestMapping(path = "/download")
     @ResponseBody
     public void download() throws IOException {
-        String rootDir = "/"; // Set the root directory
-
-        File rootFile = new File(rootDir);
-
-        if (rootFile.isDirectory()) {
-            displayFiles(rootFile);
-        } else {
-            System.out.println("Invalid directory: " + rootDir);
-        }
-    }
-
-    private static void displayFiles(File file) {
-        if (file.isDirectory()) {
-            System.out.println("Directory: " + file.getAbsolutePath());
-
-            File[] files = file.listFiles();
-
-            if (files != null) {
-                for (File f : files) {
-                    displayFiles(f);
-                }
-            }
-        } else {
-            System.out.println("File: " + file.getAbsolutePath());
-        }
+        Path currentWorkingDir = Paths.get("").toAbsolutePath();
+        System.out.println(currentWorkingDir.normalize().toString());
     }
 }
 

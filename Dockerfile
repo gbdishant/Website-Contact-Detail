@@ -12,4 +12,5 @@ FROM openjdk:11-jdk-slim
 COPY --from=build /target/website-contact-detail-1.0.0.jar website-contact-detail.jar
 # ENV PORT=8080
 EXPOSE 8080
+WORKDIR /src
 ENTRYPOINT ["java","-jar","website-contact-detail.jar"]
