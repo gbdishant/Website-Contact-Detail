@@ -6,6 +6,7 @@ import com.site.domain.CountryCallingCode;
 import lombok.extern.log4j.Log4j2;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -163,7 +164,11 @@ public class Common {
 
         try {
 
-            byte[] bytes = Files.readAllBytes(Paths.get("/src/main/resources/JsonFile/CountryCallingCode.json"));
+            String home = System.getProperty("user.home");
+            log.debug("Home dir Path: {}", home);
+            Path path = Paths.get(home + "/src/main/resources/JsonFile/CountryCallingCode.json");
+            log.debug("path: {}", path.toAbsolutePath());
+            byte[] bytes = Files.readAllBytes(path);
 
             ObjectMapper objectMapper = new ObjectMapper();
             List<CountryCallingCode> countryCallingCodes = objectMapper.readValue(bytes, new TypeReference<>() {
