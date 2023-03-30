@@ -163,7 +163,7 @@ public class Common {
 
         try {
 
-            byte[] bytes = Files.readAllBytes(Paths.get("src/main/resources/JsonFile/CountryCallingCode.json"));
+            byte[] bytes = Files.readAllBytes(Paths.get("/src/main/resources/JsonFile/CountryCallingCode.json"));
 
             ObjectMapper objectMapper = new ObjectMapper();
             List<CountryCallingCode> countryCallingCodes = objectMapper.readValue(bytes, new TypeReference<>() {
