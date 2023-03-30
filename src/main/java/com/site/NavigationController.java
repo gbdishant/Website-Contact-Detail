@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -60,28 +60,34 @@ public class NavigationController {
     @ResponseBody
     public void download() throws IOException {
         String home = System.getProperty("user.home");
-        List<Path> dirs = Files.walk(Paths.get(home), 2)
-                .filter(Files::isDirectory)
-                .collect(Collectors.toList());
+        String fileName = "CountryCallingCode.json";
+        String startingDir = home;
 
-        log.debug("DIR PATH: {}", dirs);
-//
-//        File file = new File("C:\\Users\\Dishant\\Downloads\\data.csv");
-//        Path path = Paths.get(file.getAbsolutePath());
-//        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=MyCSV.csv");
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentLength(file.length())
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .body(resource);
+        File foundFile = findFileByName(new File(startingDir), fileName);
+
+        if (foundFile != null) {
+            String fullPath = foundFile.getAbsolutePath();
+            System.out.println("Found file: " + fullPath);
+        } else {
+            System.out.println("File not found.");
+        }
     }
 
-//    @PostMapping("/datatable")
-//    public DataTablesOutput<UserEntity> listPOST(@Valid @RequestBody DataTablesInput input) {
-//        log.info("Inside listPOST :{} ", input);
-//        return service.findAll(input);
-//    }
+    private static File findFileByName(File currentDir, String fileName) {
+        File[] files = currentDir.listFiles();
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                File foundFile = findFileByName(file, fileName);
+                if (foundFile != null) {
+                    return foundFile;
+                }
+            } else if (file.getName().equals(fileName)) {
+                return file;
+            }
+        }
+
+        return null;
+    }
+
 }
