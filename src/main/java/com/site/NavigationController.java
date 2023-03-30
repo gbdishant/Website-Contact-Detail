@@ -5,11 +5,6 @@ import com.site.domain.WebsiteContactDetail;
 import com.site.service.SiteReader;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -64,19 +58,25 @@ public class NavigationController {
 
     @RequestMapping(path = "/download")
     @ResponseBody
-    public ResponseEntity<Resource> download(String param) throws IOException {
+    public void download(String param) throws IOException {
+        String home = System.getProperty("user.home");
+        List<Path> dirs = Files.walk(Paths.get(home), 2)
+                .filter(Files::isDirectory)
+                .collect(Collectors.toList());
 
-        File file = new File("C:\\Users\\Dishant\\Downloads\\data.csv");
-        Path path = Paths.get(file.getAbsolutePath());
-        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=MyCSV.csv");
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(file.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+        System.out.println(dirs);
+//
+//        File file = new File("C:\\Users\\Dishant\\Downloads\\data.csv");
+//        Path path = Paths.get(file.getAbsolutePath());
+//        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=MyCSV.csv");
+//        return ResponseEntity.ok()
+//                .headers(headers)
+//                .contentLength(file.length())
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(resource);
     }
 
 //    @PostMapping("/datatable")
