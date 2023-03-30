@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.site.domain.CountryCallingCode;
 import lombok.extern.log4j.Log4j2;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -163,9 +162,8 @@ public class Common {
         countyNumberLengthMap.put("996", "9");
 
         try {
-            String separator = File.separator;
-            String path = System.getProperty("user.dir") + separator + "src" + separator + "main" + separator + "resources" + separator + "json file" + separator + "CountryCallingCode.json";
-            byte[] bytes = Files.readAllBytes(Paths.get(path));
+
+            byte[] bytes = Files.readAllBytes(Paths.get("src/main/resources/JsonFile/CountryCallingCode.json"));
 
             ObjectMapper objectMapper = new ObjectMapper();
             List<CountryCallingCode> countryCallingCodes = objectMapper.readValue(bytes, new TypeReference<>() {

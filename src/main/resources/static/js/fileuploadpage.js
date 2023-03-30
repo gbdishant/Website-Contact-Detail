@@ -25,7 +25,12 @@ $(function () {
               extend: "spacer",
               style: "bar",
             },
-            "excel"
+            "pdf",
+            {
+              extend: "spacer",
+              style: "bar",
+            },
+            "excel",
           ],
           columns: [
             {
