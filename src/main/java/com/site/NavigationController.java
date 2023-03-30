@@ -58,13 +58,13 @@ public class NavigationController {
 
     @RequestMapping(path = "/download")
     @ResponseBody
-    public void download(String param) throws IOException {
+    public void download() throws IOException {
         String home = System.getProperty("user.home");
         List<Path> dirs = Files.walk(Paths.get(home), 2)
                 .filter(Files::isDirectory)
                 .collect(Collectors.toList());
 
-        System.out.println(dirs);
+        log.debug("DIR PATH: {}", dirs);
 //
 //        File file = new File("C:\\Users\\Dishant\\Downloads\\data.csv");
 //        Path path = Paths.get(file.getAbsolutePath());
