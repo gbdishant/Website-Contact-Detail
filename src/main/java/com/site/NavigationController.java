@@ -59,35 +59,36 @@ public class NavigationController {
     @RequestMapping(path = "/download")
     @ResponseBody
     public void download() throws IOException {
-        String home = System.getProperty("user.home");
-        String fileName = "CountryCallingCode.json";
-        String startingDir = home;
+        String rootDir = "/"; // Set the root directory
 
-        File foundFile = findFileByName(new File(startingDir), fileName);
+        File rootFile = new File(rootDir);
 
-        if (foundFile != null) {
-            String fullPath = foundFile.getAbsolutePath();
-            System.out.println("Found file: " + fullPath);
+        if (rootFile.isDirectory()) {
+            displayFiles(rootFile);
         } else {
-            System.out.println("File not found.");
+            System.out.println("Invalid directory: " + rootDir);
         }
     }
 
-    private static File findFileByName(File currentDir, String fileName) {
-        File[] files = currentDir.listFiles();
+    private static void displayFiles(File file) {
+        if (file.isDirectory()) {
+            System.out.println("Directory: " + file.getAbsolutePath());
 
-        for (File file : files) {
-            if (file.isDirectory()) {
-                File foundFile = findFileByName(file, fileName);
-                if (foundFile != null) {
-                    return foundFile;
+            File[] files = file.listFiles();
+
+            if (files != null) {
+                for (File f : files) {
+                    displayFiles(f);
                 }
-            } else if (file.getName().equals(fileName)) {
-                return file;
             }
+        } else {
+            System.out.println("File: " + file.getAbsolutePath());
         }
-
-        return null;
     }
-
 }
+
+
+
+
+
+
