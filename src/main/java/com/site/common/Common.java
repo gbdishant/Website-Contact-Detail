@@ -166,7 +166,7 @@ public class Common {
 
             String home = System.getProperty("user.home");
             log.debug("Home dir Path: {}", home);
-            Path path = Paths.get(home + "/src/main/resources/JsonFile/CountryCallingCode.json");
+            Path path = Paths.get(home + "./src/main/resources/JsonFile/CountryCallingCode.json");
             log.debug("path: {}", path.toAbsolutePath());
             byte[] bytes = Files.readAllBytes(path);
 

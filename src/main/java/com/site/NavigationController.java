@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,7 +20,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.site.constant.Constant.URL_REGEX;
 
@@ -59,9 +59,10 @@ public class NavigationController {
     @RequestMapping(path = "/download")
     @ResponseBody
     public void download() throws IOException {
-        String currentWorkingDir = System.getProperty("user.dir");
-        Stream<Path> walk = Files.walk(Path.of(currentWorkingDir));
-        walk.forEach(System.out::println);
+        File path = new File("./src/main/resources/JsonFile/CountryCallingCode.json");
+        boolean exists = path.exists();
+        System.out.println("exists = " + exists);
+        System.out.println("path.getAbsolutePath() = " + path.getAbsolutePath());
     }
 }
 
