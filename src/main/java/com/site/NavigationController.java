@@ -59,9 +59,7 @@ public class NavigationController {
     @RequestMapping(path = "/download")
     @ResponseBody
     public void download() throws IOException {
-        File path = new File("./src/main/resources/JsonFile/CountryCallingCode.json");
-        boolean exists = path.exists();
-        System.out.println("exists = " + exists);
+        File path = new File("NEWTEXTGILE.txt");
         System.out.println("path.getAbsolutePath() = " + path.getAbsolutePath());
     }
 }
