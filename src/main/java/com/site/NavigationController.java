@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.site.constant.Constant.URL_REGEX;
 
@@ -59,8 +59,9 @@ public class NavigationController {
     @RequestMapping(path = "/download")
     @ResponseBody
     public void download() throws IOException {
-        Path currentWorkingDir = Paths.get("").toAbsolutePath();
-        System.out.println(currentWorkingDir.normalize().toString());
+        String currentWorkingDir = System.getProperty("user.dir");
+        Stream<Path> walk = Files.walk(Path.of(currentWorkingDir));
+        walk.forEach(System.out::println);
     }
 }
 
