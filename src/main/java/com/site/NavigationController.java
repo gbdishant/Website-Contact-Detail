@@ -5,6 +5,7 @@ import com.site.domain.WebsiteContactDetail;
 import com.site.service.SiteReader;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.client.utils.URIUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +45,7 @@ public class NavigationController {
 
         try {
             List<String> sites = Files.lines(site, StandardCharsets.UTF_8)
+                    .map(this::correctURL)
                     .filter(siteURL -> Pattern.matches(URL_REGEX, siteURL))
                     .collect(Collectors.toList());
             SiteReader siteReader = new SiteReader();
@@ -61,6 +64,17 @@ public class NavigationController {
     public void download() throws IOException {
         File path = new File("NEWTEXTGILE.txt");
         System.out.println("path.getAbsolutePath() = " + path.getAbsolutePath());
+    }
+
+    private String correctURL(String siteURL) {
+        if (!siteURL.startsWith("www.") && !siteURL.startsWith("http://") && !siteURL.startsWith("https://")) {
+            siteURL = "www." + siteURL;
+        }
+        if (!siteURL.startsWith("http://") && !siteURL.startsWith("https://")) {
+            siteURL = "http://" + siteURL;
+        }
+        siteURL = URIUtils.extractHost(URI.create(siteURL)).toString();
+        return siteURL;
     }
 }
 

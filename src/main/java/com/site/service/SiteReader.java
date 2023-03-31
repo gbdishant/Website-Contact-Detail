@@ -1,8 +1,8 @@
 package com.site.service;
 
 import com.site.Helper;
+import com.site.common.Common;
 import com.site.constant.Constant;
-import com.site.domain.CountryCallingCode;
 import com.site.domain.CountryDetail;
 import com.site.domain.WebsiteContactDetail;
 import lombok.extern.log4j.Log4j2;
@@ -20,9 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,15 +36,16 @@ public class SiteReader {
 
 
     public List<WebsiteContactDetail> getSiteData(List<String> sites) throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool(20);
-        try {
-            for (String s : sites) {
-                executor.execute(new Generator(s));
-            }
-        } finally {
-            executor.shutdown();
-            executor.awaitTermination(25, TimeUnit.SECONDS);
+        ThreadPoolExecutor executor = Common.executor;
+
+        for (String s : sites) {
+            executor.execute(new Generator(s));
         }
+
+        while (executor.getTaskCount() != executor.getCompletedTaskCount()) {
+            Thread.sleep(1000);
+        }
+
         return contactDetailList;
     }
 
@@ -152,9 +151,8 @@ public class SiteReader {
             if (countryDetail != null) {
                 String countryCode = countryDetail.getCountryCode();
                 if (countryDialCodeMap.containsKey(countryCode)) {
-                    CountryCallingCode countryCallingCodes = countryDialCodeMap.get(countryCode);
-                    countryCodeRegex = "^.*?((\\" + countryCallingCodes.getDialCode() + ")|(\\" + countryCallingCodes.getDialCode()
-                            .replaceAll(" ", "") + ")).*$";
+                    String dialCode = countryDialCodeMap.get(countryCode);
+                    countryCodeRegex = "^.*?((\\" + dialCode + ")|(\\" + dialCode.replaceAll(" ", "") + ")).*$";
                 } else {
                     countryCodeRegex = "^.*?(\\+).*$";
                 }
@@ -187,25 +185,18 @@ public class SiteReader {
                 }
             }
 
-            int i = 1;
-            while (i <= 3) {
-                try {
-                    Connection.Response res = Jsoup.connect(url).userAgent("Mozilla/5.0").execute();
+            try {
+                Connection.Response res = Jsoup.connect(url).userAgent("Mozilla/5.0").execute();
 
-                    if (HttpStatus.resolve(res.statusCode()).is2xxSuccessful()) {
-                        document = res.parse();
-                        log.debug("Document is Ready for URL: {}", url);
-                        break;
-                    } else if (HttpStatus.resolve(res.statusCode()).is4xxClientError()
-                            || HttpStatus.resolve(res.statusCode()).is5xxServerError()) {
-                        log.debug("Status Code: {} for URL: {};", res.statusCode(), url);
-                        break;
-                    }
-
-                } catch (Exception exception) {
-                    log.error("Exception while get document for site: {}. Error message: {}", url, exception.getMessage(), exception);
-                    log.debug("Lets try {} time for {}", ++i, url);
+                if (HttpStatus.resolve(res.statusCode()).is2xxSuccessful()) {
+                    document = res.parse();
+                    log.debug("Document is Ready for URL: {}", url);
+                } else if (HttpStatus.resolve(res.statusCode())
+                        .is4xxClientError() || HttpStatus.resolve(res.statusCode()).is5xxServerError()) {
+                    log.debug("Status Code: {} for URL: {};", res.statusCode(), url);
                 }
+            } catch (Exception exception) {
+                log.error("Exception while get document for site: {}. Error message: {}", url, exception.getMessage(), exception);
             }
             return document;
         }
