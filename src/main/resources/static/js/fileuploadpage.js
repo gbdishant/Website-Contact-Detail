@@ -1,15 +1,34 @@
 $(function () {
   showFileName();
+  $("#chooseFile").tooltip('disable');
+
   $("#but_upload").click(function () {
     let fd = new FormData();
     let files = $("#chooseFile")[0].files[0];
     fd.append("file", files);
+    console.log("file: " + files);
+    if (files == null) {
+      $("#chooseFile").tooltip('enable').tooltip('show');
+      setTimeout(function () {
+        $('#chooseFile').tooltip('hide').tooltip('disable');
+    }, 3000);
+    return;
+    }
 
     $.ajax({
       url: "/upload",
       type: "post",
       data: fd,
       contentType: false,
+      beforeSend: function () {
+        $("#but_upload")
+          .fadeIn(3000)
+          .html("Please Wait...")
+          .prop("disabled", true);
+      },
+      complete: function () {
+        $("#but_upload").html("Submit").prop("disabled", false);
+      },
       processData: false,
       dataType: "json",
       success: function (response) {
