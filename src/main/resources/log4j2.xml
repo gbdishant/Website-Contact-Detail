@@ -7,8 +7,9 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.apache" level="WARN"/>
-        <Root level="DEBUG" additivity="false">
+        <Logger name="org.apache" level="ERROR"/>
+        <Logger name="com.site" level="DEBUG"/>
+        <Root level="ERROR">
             <AppenderRef ref="console"/>
         </Root>
     </Loggers>
