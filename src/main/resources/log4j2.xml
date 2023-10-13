@@ -1,16 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ERROR">
+    <Properties>
+        <Property name="basePath">/opt/logs</Property>
+    </Properties>
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
         </Console>
+        <RollingFile name="RollingFile" fileName="${basePath}/website_detail_log_${date:dd_MM_yy}.log"
+                     filePattern="${basePath}/$${date:dd_MM_yy}/website_detail_log_%d{dd_MM_yy}-%i.log.gz">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}.%M:%L - %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5">
+                <Delete basePath="${basePath}" maxDepth="2">
+                    <IfFileName glob="*/website_detail_log_*.log.gz">
+                        <IfLastModified age="5d">
+                            <IfAny>
+                                <IfAccumulatedFileSize exceeds="1 GB"/>
+                                <IfAccumulatedFileCount exceeds="5"/>
+                            </IfAny>
+                        </IfLastModified>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Logger name="org.apache" level="ERROR"/>
         <Logger name="com.site" level="DEBUG"/>
         <Root level="ERROR">
             <AppenderRef ref="console"/>
+            <AppenderRef ref="RollingFile"/>
         </Root>
     </Loggers>
 </Configuration>
