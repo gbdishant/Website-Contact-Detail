@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,9 +43,9 @@ public class NavigationController {
 
         try {
             List<String> sites = Files.lines(site, StandardCharsets.UTF_8)
-                    .map(this::correctURL)
-                    .filter(siteURL -> Pattern.matches(URL_REGEX, siteURL))
-                    .collect(Collectors.toList());
+                                      .map(this::correctURL)
+                                      .filter(siteURL -> Pattern.matches(URL_REGEX, siteURL))
+                                      .collect(Collectors.toList());
             SiteReader siteReader = new SiteReader();
             List<WebsiteContactDetail> siteData = siteReader.getSiteData(sites);
             log.debug("SiteData size: {}", siteData.size());
@@ -57,13 +55,6 @@ public class NavigationController {
         }
 
         return null;
-    }
-
-    @RequestMapping(path = "/download")
-    @ResponseBody
-    public void download() throws IOException {
-        File path = new File("NEWTEXTGILE.txt");
-        System.out.println("path.getAbsolutePath() = " + path.getAbsolutePath());
     }
 
     private String correctURL(String siteURL) {
