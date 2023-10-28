@@ -7,8 +7,8 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
         </Console>
-        <RollingFile name="RollingFile" fileName="${basePath}/website_detail_log_${date:dd_MM_yy}.log"
-                     filePattern="${basePath}/$${date:dd_MM_yy}/website_detail_log_%d{dd_MM_yy}-%i.log.gz">
+        <RollingFile name="RollingFile" fileName="${basePath}/website_detail.log"
+                     filePattern="${basePath}/website_detail_%d{dd_MM_yy}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}.%M:%L - %m%n</pattern>
             </PatternLayout>
@@ -16,15 +16,11 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
             <DefaultRolloverStrategy max="5">
-                <Delete basePath="${basePath}" maxDepth="2">
-                    <IfFileName glob="*/website_detail_log_*.log.gz">
-                        <IfLastModified age="5d">
-                            <IfAny>
-                                <IfAccumulatedFileSize exceeds="1 GB"/>
-                                <IfAccumulatedFileCount exceeds="5"/>
-                            </IfAny>
-                        </IfLastModified>
-                    </IfFileName>
+                <Delete basePath="${basePath}/">
+                    <IfAll>
+                        <IfFileName glob="website_detail_*"/>
+                        <IfLastModified age="5d"/>
+                    </IfAll>
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
