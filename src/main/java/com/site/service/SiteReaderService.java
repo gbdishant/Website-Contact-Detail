@@ -1,4 +1,4 @@
-package com.site.service.impl;
+package com.site.service;
 
 import com.site.domain.WebsiteContactDetail;
 import java.util.List;

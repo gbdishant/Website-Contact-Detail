@@ -2,7 +2,7 @@ package com.site;
 
 
 import com.site.domain.WebsiteContactDetail;
-import com.site.service.impl.SiteReaderService;
+import com.site.service.SiteReaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.client.utils.URIUtils;
