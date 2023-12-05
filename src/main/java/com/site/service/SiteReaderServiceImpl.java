@@ -5,6 +5,8 @@ import com.site.common.Common;
 import com.site.constant.Constant;
 import com.site.domain.CountryDetail;
 import com.site.domain.WebsiteContactDetail;
+import com.site.service.impl.SiteReaderService;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +16,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.net.URI;
@@ -28,14 +31,17 @@ import static com.site.common.Common.countryDialCodeMap;
 import static com.site.constant.Constant.EMAIL_REGEX;
 
 @Log4j2
-public class SiteReader {
+@Service
+public class SiteReaderServiceImpl implements SiteReaderService {
     public static final String MAIN_URL = "main_url";
     public static final String SUB_URL = "sub_url";
     public static final Pattern emailPattern = Pattern.compile(EMAIL_REGEX);
     private final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
 
 
-    public List<WebsiteContactDetail> getSiteData(List<String> sites) throws InterruptedException {
+    @Override
+    @SneakyThrows
+    public List<WebsiteContactDetail> getSiteData(List<String> sites) {
         ThreadPoolExecutor executor = Common.executor;
 
         for (String s : sites) {
@@ -50,10 +56,10 @@ public class SiteReader {
     }
 
 
-    public class Generator implements Runnable {
+    class Generator implements Runnable {
         private String siteURL;
         private String countryCodeRegex;
-        private final Logger log = SiteReader.log;
+        private final Logger log = SiteReaderServiceImpl.log;
         private final HashSet<String> hrefSet = new HashSet<>();
         private final HashSet<String> emailSet = new HashSet<>();
         private final HashSet<String> phoneNumberSet = new HashSet<>();
@@ -72,7 +78,7 @@ public class SiteReader {
             hrefSet.clear();
             correctURL(siteURL);
 
-            doc = getURLResponse(siteURL, SiteReader.MAIN_URL);
+            doc = getURLResponse(siteURL, MAIN_URL);
             if (doc == null) {
                 log.debug("[{}] No Page found", siteURL);
                 return;
@@ -88,7 +94,7 @@ public class SiteReader {
                         .forEach(element -> {
                             try {
                                 log.debug("Inside filter {}", element);
-                                Document contactPageDoc = getURLResponse(element.attr("href"), SiteReader.SUB_URL);
+                                Document contactPageDoc = getURLResponse(element.attr("href"), SUB_URL);
                                 if (contactPageDoc == null) {
                                     log.debug("[{}] No Page found", element.attr("href"));
                                     return;
@@ -105,7 +111,7 @@ public class SiteReader {
                                             }
                                         }
                                         if (text.contains("@")) {
-                                            Matcher matcher = SiteReader.emailPattern.matcher(text);
+                                            Matcher matcher = emailPattern.matcher(text);
                                             if (matcher.find()) {
                                                 String email = matcher.group();
                                                 emailSet.add(email);
@@ -175,7 +181,7 @@ public class SiteReader {
             log.debug("Inside getURLResponse url: {} type: {}", url, type);
 
             Document document = null;
-            if (type.equals(SiteReader.MAIN_URL)) {
+            if (type.equals(MAIN_URL)) {
                 url = siteURL;
             } else {
                 if (url.startsWith("/")) {
