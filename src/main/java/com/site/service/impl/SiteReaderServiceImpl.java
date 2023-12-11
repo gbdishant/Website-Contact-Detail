@@ -18,15 +18,13 @@ import org.jsoup.select.Elements;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import static com.site.common.Common.countryDialCodeMap;
 import static com.site.constant.Constant.EMAIL_REGEX;
 
@@ -36,12 +34,13 @@ public class SiteReaderServiceImpl implements SiteReaderService {
     public static final String MAIN_URL = "main_url";
     public static final String SUB_URL = "sub_url";
     public static final Pattern emailPattern = Pattern.compile(EMAIL_REGEX);
-    private final List<WebsiteContactDetail> contactDetailList = new ArrayList<>();
+    private List<WebsiteContactDetail> contactDetailList;
 
 
     @Override
     @SneakyThrows
     public List<WebsiteContactDetail> getSiteData(List<String> sites) {
+        contactDetailList = new CopyOnWriteArrayList<>();
         ThreadPoolExecutor executor = Common.executor;
 
         for (String s : sites) {
@@ -126,9 +125,7 @@ public class SiteReaderServiceImpl implements SiteReaderService {
             }
             WebsiteContactDetail contactDetail = new WebsiteContactDetail(siteURL, emailSet, phoneNumberSet);
 
-            synchronized (contactDetailList) {
-                contactDetailList.add(contactDetail);
-            }
+            contactDetailList.add(contactDetail);
             log.debug("ContactDetail: {}", contactDetail);
         }
 

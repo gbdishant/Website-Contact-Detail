@@ -42,12 +42,14 @@ public class NavigationController {
         List<WebsiteContactDetail> siteData = null;
         try {
             Path site = Files.createTempFile("site", ".txt");
+            log.debug("site: {}", site.toAbsolutePath());
             file.transferTo(site);
 
             List<String> sites = Files.lines(site, StandardCharsets.UTF_8)
                                       .map(this::correctURL)
                                       .filter(siteURL -> Pattern.matches(URL_REGEX, siteURL))
                                       .collect(Collectors.toList());
+            log.debug("sites: {}", sites);
             siteData = siteReaderService.getSiteData(sites);
             log.debug("SiteData size: {}", siteData.size());
             return siteData;
